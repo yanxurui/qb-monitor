@@ -32,7 +32,6 @@ async def home():
     return render_template(
         'home.html',
         qb_info=conf.qbs,
-        duration=duration,
         now=datetime.now().strftime("%H:%M:%S"))
 
 @app.route('/<int:qb_id>')
