@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Qbittorrent monitor</title>
     <style type="text/css">
-        h1 {
+        h1, p {
             text-align: center;
         }
         table {
@@ -41,27 +41,26 @@
 </head>
 <body>
 {% block content %}
-    <h1>Qbittorrent manager</h1>
+    <h1>Qbittorrent monitor</h1>
     <table>
       <thead>
         <tr>
-          <th>name</th>
-          <th>down</th>
-          <th>up</th>
+          <th>Name</th>
+          <th>Down</th>
+          <th>Up</th>
         </tr>
       </thead>
       <tbody>
       {% for q in qb_info %}
        <tr>
-           <td> <a href="{{ q.get('url') }}">{{ q.get('name') }}</a> </td>
+           <td> <a target="_blank" href="{{ q.get('url') }}">{{ q.get('name') }}</a> </td>
            <td> {{ q.get('dl_info_speed') }}/s ({{ q.get('dl_info_data') }}) 
            <td> {{ q.get('up_info_speed') }}/s ({{ q.get('up_info_data') }}) </td>
        </tr>
       {% endfor %}
       </tbody>
     </table>
-    <p>Loaded in {{"%.2f"|format(duration)}} seconds</p>
-    <p>Updated at {{now()}}</p>
+    <p>Loaded in {{"%.2f"|format(duration)}} seconds, updated at {{now}}</p>
 {% endblock %}
 </body>
 </html>
