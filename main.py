@@ -25,21 +25,24 @@ async def home():
     app.logger.info('Started')
     global conf
     conf = reload(conf)
-    qb_info = await get_info_all(conf.qbs)
     end = time.time()
     duration = end - start
     app.logger.info('Finishied in {0:.2f} seconds'.format(duration))
 
     return render_template(
         'home.html',
-        qb_info=qb_info,
+        qb_info=conf.qbs,
         duration=duration,
         now=datetime.now().strftime("%H:%M:%S"))
 
-async def get_info_all(qbs):
-    tasks = [query_qb_with_retry(qb) for qb in qbs]
-    result = await asyncio.gather(*tasks)
-    return qbs
+@app.route('/<int:qb_id>')
+async def get_qb_stats(qb_id):
+    try:
+        qb = conf.qbs[qb_id]
+    except IndexError:
+        return 'Invalid qb_id', 401
+    await query_qb_with_retry(qb)
+    return qb
 
 async def query_qb_with_retry(qb):
     url = qb['url']

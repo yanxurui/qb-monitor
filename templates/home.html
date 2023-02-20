@@ -4,40 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Qbittorrent monitor</title>
-    <style type="text/css">
-        h1, p {
-            text-align: center;
-        }
-        table {
-            margin: 0 auto;
-            border-collapse: collapse;
-            width: 100%;
-            max-width: 500px;
-        }
-
-        tr:nth-of-type(even) {
-            background: rgba(0, 0, 0, 0.05);
-        }
-
-        thead>tr {
-            border-bottom-width: 2px;
-        }
-
-        tr {
-            border-color: inherit;
-            border-style: solid;
-            border-width: 0;
-            border-bottom-width: 1px;
-        }
-
-        td, th {
-            padding: .5rem;
-        }
-
-        th {
-            text-align: left;
-        }
-    </style>
+    <link rel="stylesheet" href="../static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+    <script src="../static/main.js"></script>
 </head>
 <body>
 {% block content %}
@@ -54,8 +23,8 @@
       {% for q in qb_info %}
        <tr>
            <td> <a target="_blank" href="{{ q.get('url') }}">{{ q.get('name') }}</a> </td>
-           <td> {{ q.get('dl_info_speed') }}/s ({{ q.get('dl_info_data') }}) 
-           <td> {{ q.get('up_info_speed') }}/s ({{ q.get('up_info_data') }}) </td>
+           <td><span class="loading"></span></td>
+           <td><span class="loading"></span></td>
        </tr>
       {% endfor %}
       </tbody>
