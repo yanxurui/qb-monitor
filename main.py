@@ -9,6 +9,7 @@ from datetime import datetime
 import httpx
 from flask import Flask
 from flask import render_template
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 import conf
 
@@ -17,7 +18,7 @@ logging.basicConfig(
     level=logging.INFO)
 
 app = Flask(__name__)
-
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1, x_prefix=1)
 
 @app.route('/')
 async def home():
@@ -94,3 +95,9 @@ def sizeof_fmt(num, suffix="B"):
             return f"{num:3.1f}{unit}{suffix}"
         num /= 1024.0
     return f"{num:.1f}Yi{suffix}"
+
+if __name__ == "__main__":
+    import bjoern
+
+    bjoern.run(app, "127.0.0.1", 5001)
+

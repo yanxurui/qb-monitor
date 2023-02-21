@@ -3,7 +3,7 @@ $(document).ready(function() {
     $rows.each(function(index, e) {
         var s = new Date();
         $.ajax({
-            url: '/' + index,
+            url: '' + index,
             type: "GET",
             dataType: "json",
 
