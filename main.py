@@ -96,8 +96,4 @@ def sizeof_fmt(num, suffix="B"):
         num /= 1024.0
     return f"{num:.1f}Yi{suffix}"
 
-if __name__ == "__main__":
-    import bjoern
-
-    bjoern.run(app, "127.0.0.1", 5001)
 
