@@ -9,11 +9,15 @@ $(document).ready(function() {
 
             success: function(data) {
                 if (data.hasOwnProperty('dl_info_speed')) {
-                    $(e).find("td:nth-child(2)").text(data['dl_info_speed'] + '/s' + '(' + data['dl_info_data'] + ')');
-                    $(e).find("td:nth-child(3)").text(data['up_info_speed'] + '/s' + '(' + data['up_info_data'] + ')');
+                    $(e).find("td:nth-child(2)").text(data['dl_info_speed'] + '/s');
+                    $(e).find("td:nth-child(3)").text(data['dl_info_data']);
+                    $(e).find("td:nth-child(4)").text(data['up_info_speed'] + '/s');
+                    $(e).find("td:nth-child(5)").text(data['up_info_data']);
                 } else {
                     $(e).find("td:nth-child(2)").text('-');
                     $(e).find("td:nth-child(3)").text('-');
+                    $(e).find("td:nth-child(4)").text('-');
+                    $(e).find("td:nth-child(5)").text('-');
                 }
 
                 var seconds = Math.round((new Date() - s)/10)/100;
