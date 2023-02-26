@@ -11,7 +11,7 @@ from flask import Flask
 from flask import render_template
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-import conf
+from config import Config
 logging.basicConfig(
     format='%(asctime)s %(levelname)s %(filename)s:%(lineno)d %(message)s',
     level=logging.INFO)
@@ -23,20 +23,21 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1, x_prefix=1)
 async def home():
     start = time.time()
     app.logger.info('Started')
-    reload(conf)
+    conf = Config.get_config(True)
     end = time.time()
     duration = end - start
     app.logger.info('Finishied in {0:.2f} seconds'.format(duration))
 
     return render_template(
         'home.html',
-        qb_info=conf.qbs,
+        qb_info=conf['qbs'],
         now=datetime.now().strftime("%H:%M:%S"))
 
 @app.route('/<int:qb_id>')
 async def get_qb_stats(qb_id):
     try:
-        qb = conf.qbs[qb_id]
+        conf = Config.get_config()
+        qb = conf['qbs'][qb_id]
         qb['url'] = qb['url'].rstrip('/')
     except IndexError:
         return 'Invalid qb_id', 401
