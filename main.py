@@ -12,7 +12,6 @@ from flask import render_template
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 import conf
-
 logging.basicConfig(
     format='%(asctime)s %(levelname)s %(filename)s:%(lineno)d %(message)s',
     level=logging.INFO)
@@ -24,8 +23,7 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1, x_prefix=1)
 async def home():
     start = time.time()
     app.logger.info('Started')
-    global conf
-    conf = reload(conf)
+    reload(conf)
     end = time.time()
     duration = end - start
     app.logger.info('Finishied in {0:.2f} seconds'.format(duration))
@@ -39,6 +37,7 @@ async def home():
 async def get_qb_stats(qb_id):
     try:
         qb = conf.qbs[qb_id]
+        qb['url'] = qb['url'].rstrip('/')
     except IndexError:
         return 'Invalid qb_id', 401
     await query_qb_with_retry(qb)
@@ -70,7 +69,7 @@ async def query_qb(qb):
             })
 
         if r.status_code != 200:
-            app.logger.error('failed to login {}'.format(url))
+            app.logger.error('failed to login {}. Status code is {}'.format(url, r.status_code))
             return False
         end = time.time()
         app.logger.info('Login {0} in {1:.2f} seconds'.format(url, end-start))
