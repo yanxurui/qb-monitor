@@ -25,6 +25,10 @@ $(document).ready(function() {
             },
 
             error: function(jqXHR, textStatus, errorThrown) {
+                $(e).find("td:nth-child(2)").text('ERR');
+                $(e).find("td:nth-child(3)").text('ERR');
+                $(e).find("td:nth-child(4)").text('ERR');
+                $(e).find("td:nth-child(5)").text('ERR');
                 console.log('jqXHR:');
                 console.log(jqXHR);
                 console.log('textStatus:');
