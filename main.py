@@ -68,7 +68,8 @@ async def query_qb(qb):
     start = time.time()
     # It's important to set unsafe of CookieJar
     # otherwise, the default CookieJar won't update the cookies if the host is ip
-    async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar(unsafe=True)) as s:
+    session_timeout = aiohttp.ClientTimeout(total=None,sock_connect=3,sock_read=3)
+    async with aiohttp.ClientSession(timeout=session_timeout, cookie_jar=aiohttp.CookieJar(unsafe=True)) as s:
         async with s.post(url+'/api/v2/auth/login', data={
             'username': qb['username'],
             'password': qb['password']
