@@ -44,7 +44,11 @@ async def get_qb_stats(request):
         qb['url'] = qb['url'].rstrip('/')
     except IndexError:
         return 'Invalid qb_id', 401
-    await query_qb_with_retry(qb)
+    if not await query_qb_with_retry(qb):
+        # if we failed to get the latest info
+        # keep the total but remove the speed we got last time
+        qb.pop('dl_info_speed', None)
+        qb.pop('up_info_speed', None)
     return web.json_response(qb)
 
 async def query_qb_with_retry(qb):
