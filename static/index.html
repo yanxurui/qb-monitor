@@ -24,7 +24,9 @@
             now: new Date().toLocaleTimeString(),
             qbs: [],
             total: {},
-            columns: ['dl_info_speed', 'dl_info_data', 'up_info_speed', 'up_info_data']
+            columns: ['dl_info_speed', 'dl_info_data', 'up_info_speed', 'up_info_data'],
+            sortKey: '',
+            sortOrders: {}
           }
         },
         created() {
@@ -32,6 +34,7 @@
           this.columns.forEach(c => {
             this.total[c] = 0;
           });
+          this.sortOrders = this.columns.reduce((o, key) => ((o[key] = 1), o), {});
 
           fetch("/qbs")
             .then(response => response.json())
@@ -75,7 +78,30 @@
               console.error('Error:', error);
             });
         },
+        computed: {
+          filteredData() {
+            const sortKey = this.sortKey;
+            const order = this.sortOrders[sortKey];
+            let data = this.qbs;
+
+            if (sortKey) {
+              data = data.slice().sort((a, b) => {
+                a = a[sortKey];
+                b = b[sortKey];
+                return (a === b ? 0 : a > b ? 1 : -1) * order;
+              })
+            }
+            return data
+          }
+        },
         methods: {
+          sortBy(key) {
+            this.sortKey = key;
+            this.sortOrders[key] = this.sortOrders[key] * -1;
+          },
+          getColumnName(c) {
+            return c.indexOf("speed") > -1 ? "rate" : "total";
+          },
           convertBytesToHumanReadable(num) {
             if (num == undefined) {
               return '-';
@@ -106,14 +132,16 @@
           <th colspan="2">Upload</th>
         </tr>
         <tr>
-          <th>rate</th>
-          <th>total</th>
-          <th>rate</th>
-          <th>total</th>
+          <th v-for="c in columns"
+            @click="sortBy(c)"
+            :class="{ active: sortKey == c }">
+            {{ getColumnName(c)}}
+            <span class="arrow" :class="sortOrders[c] > 0 ? 'asc' : 'dsc'"></span>
+          </th>
         </tr>
       </thead>
       <tbody>
-       <tr v-for="qb in qbs" :key="qb.id">
+       <tr v-for="qb in filteredData" :key="qb.id">
            <td> <a target="_blank" href="{{ qb.url }}">{{ qb.name }}</a> </td>
            <td v-for="c in columns">
             <span v-if="!qb.hasOwnProperty('ok')" class="loading"></span>
