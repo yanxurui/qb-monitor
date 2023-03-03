@@ -142,7 +142,7 @@
       </thead>
       <tbody>
        <tr v-for="qb in filteredData" :key="qb.id">
-           <td> <a target="_blank" href="{{ qb.url }}">{{ qb.name }}</a> </td>
+           <td> <a target="_blank" :href="qb.url">{{ qb.name }}</a> </td>
            <td v-for="c in columns">
             <span v-if="!qb.hasOwnProperty('ok')" class="loading"></span>
             <span v-else-if="qb.ok">{{ this.convertBytesToHumanReadable(qb.get(c)) }}</span>
