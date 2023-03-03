@@ -2,6 +2,7 @@ h1, p {
     text-align: center;
 }
 
+/* table style */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -31,7 +32,7 @@ th {
     text-align: center;
 }
 
-
+/* 3-dots loading style */
 .loading:after {
   overflow: hidden;
   display: inline-block;
@@ -52,4 +53,9 @@ th {
   to {
     width: 1.25em;    
   }
+}
+
+/* avoid displaying the mustache before the Vue is ready */
+[v-cloak] {
+  display: none;
 }

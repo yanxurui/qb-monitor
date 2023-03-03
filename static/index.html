@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qbittorrent monitor</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="importmap">
+      {
+        "imports": {
+          "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+        }
+      }
+    </script>
+    <script type="module">
+      import { createApp } from 'vue'
+
+      // give each item a unique id
+      let id = 0;
+      
+      createApp({
+        data() {
+          return {
+            now: new Date().toLocaleTimeString(),
+            qbs: [],
+            columns: ['dl_info_speed', 'dl_info_data', 'up_info_speed', 'up_info_data']
+          }
+        },
+        beforeCreate() {
+          // component is now mounted.
+          fetch("/qbs")
+            .then(response => response.json())
+            .then(data => {
+              this.qbs = data;
+              this.qbs.forEach(qb => {
+                qb.id = id++;
+                qb.get = function (key) {
+                  return this[key];
+                };
+
+                var s = new Date();
+
+                fetch("/qbs/" + qb.id)
+                .then(function(response) {
+                  if (!response.ok) {
+                    throw Error(response.statusText);
+                  }
+                  return response.json();
+                })
+                .then(data => {
+                  this.columns.forEach(c => {
+                    qb[c] = data[c];
+                  });
+                  var seconds = Math.round((new Date() - s)/10)/100;
+                  console.log("Time elapsed: " + seconds + "seconds for " + qb.id);
+                  qb.ok = true;
+                  })
+                .catch(error => {
+                  qb.ok = false;
+                  console.error('Error:', error);
+                });
+
+              })
+            })
+            .catch(error => {
+              console.error('Error:', error);
+            });
+        },
+        methods: {
+          convertBytesToHumanReadable(num) {
+            if (num == undefined) {
+              return '-';
+            }
+            const suffix = "B";
+            const units = ["", "K", "M", "G", "T", "P", "E", "Z"];
+            for (let unit of units) {
+              if (Math.abs(num) < 1024.0) {
+                return num.toFixed(1) + unit + suffix;
+              }
+              num /= 1024.0;
+            }
+            return num.toFixed(1) + "Y" + suffix;
+          }
+        }
+      }).mount('#app');
+    </script>
+</head>
+<body>
+  <div id="app" v-cloak>
+    <h1>Qbittorrent monitor</h1>
+
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2">Name</th>
+          <th colspan="2">Download</th>
+          <th colspan="2">Upload</th>
+        </tr>
+        <tr>
+          <th>rate</th>
+          <th>total</th>
+          <th>rate</th>
+          <th>total</th>
+        </tr>
+      </thead>
+      <tbody>
+       <tr v-for="qb in qbs" :key="qb.id">
+           <td> <a target="_blank" href="{{ qb.url }}">{{ qb.name }}</a> </td>
+           <td v-for="c in columns">
+            <span v-if="!qb.hasOwnProperty('ok')" class="loading"></span>
+            <span v-else-if="qb.ok">{{ this.convertBytesToHumanReadable(qb.get(c)) }}</span>
+            <span v-else class="failed">ERR</span>
+           </td>
+       </tr>
+      </tbody>
+    </table>
+    <p>Updated at {{now}}</p>
+  </div>
+</body>
+</html>
