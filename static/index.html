@@ -23,11 +23,16 @@
           return {
             now: new Date().toLocaleTimeString(),
             qbs: [],
+            total: {},
             columns: ['dl_info_speed', 'dl_info_data', 'up_info_speed', 'up_info_data']
           }
         },
-        beforeCreate() {
+        created() {
           // component is now mounted.
+          this.columns.forEach(c => {
+            this.total[c] = 0;
+          });
+
           fetch("/qbs")
             .then(response => response.json())
             .then(data => {
@@ -49,11 +54,15 @@
                 })
                 .then(data => {
                   this.columns.forEach(c => {
-                    qb[c] = data[c];
+                    let v = data[c];
+                    if (v != undefined) {
+                      qb[c] = v;
+                      this.total[c] += v; // sum up all the values
+                    }
                   });
+                  qb.ok = true;
                   var seconds = Math.round((new Date() - s)/10)/100;
                   console.log("Time elapsed: " + seconds + "seconds for " + qb.id);
-                  qb.ok = true;
                   })
                 .catch(error => {
                   qb.ok = false;
@@ -111,6 +120,12 @@
             <span v-else-if="qb.ok">{{ this.convertBytesToHumanReadable(qb.get(c)) }}</span>
             <span v-else class="failed">ERR</span>
            </td>
+       </tr>
+       <tr>
+        <td>Total</td>
+        <td v-for="c in columns">
+          {{ this.convertBytesToHumanReadable(total[c]) }}
+        </td>
        </tr>
       </tbody>
     </table>
