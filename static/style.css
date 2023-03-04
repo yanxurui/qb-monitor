@@ -61,6 +61,10 @@ th {
 }
 
 /* styles for sort */
+thead > tr:nth-child(2) > th {
+  cursor: pointer;
+}
+
 th.active .arrow {
   opacity: 1;
   border-bottom-color: #0f0;
