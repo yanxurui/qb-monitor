@@ -34,7 +34,7 @@ async def get_qb_stats(request):
         qb = config['qbs'][qb_id]
         qb['url'] = qb['url'].rstrip('/')
     except IndexError:
-        return 'Invalid qb_id', 401
+        raise aiohttp.web.HTTPBadRequest(text='Invalid qb_id')
     if not await query_qb_with_retry(qb):
         # if we failed to get the latest info
         # keep the total but remove the speed we got last time
