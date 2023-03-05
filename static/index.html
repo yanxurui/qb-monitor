@@ -14,12 +14,13 @@
       createApp({
         data() {
           return {
-            now: new Date().toLocaleTimeString(),
+            now: '',
             qbs: [],
             total: {},
             columns: ['dl_info_speed', 'dl_info_data', 'up_info_speed', 'up_info_data'],
             sortKey: '',
-            sortOrders: {}
+            sortOrders: {},
+            error: ''
           }
         },
         created() {
@@ -30,7 +31,11 @@
           this.sortOrders = this.columns.reduce((o, key) => ((o[key] = 1), o), {});
 
           fetch("/qbs")
-            .then(response => response.json())
+            .then(function(response) {
+              if (!response.ok) {
+                throw Error(response.statusText);
+              }
+              return response.json();})
             .then(data => {
               this.qbs = data;
               this.qbs.forEach(qb => {
@@ -46,8 +51,7 @@
                   if (!response.ok) {
                     throw Error(response.statusText);
                   }
-                  return response.json();
-                })
+                  return response.json();})
                 .then(data => {
                   this.now = new Date().toLocaleTimeString();
                   this.columns.forEach(c => {
@@ -69,7 +73,7 @@
               })
             })
             .catch(error => {
-              console.error('Error:', error);
+              this.error = error;
             });
         },
         computed: {
@@ -151,7 +155,8 @@
        </tr>
       </tbody>
     </table>
-    <p>Synced at {{now}}</p>
+    <p class="success" v-if="now">Synced at {{now}}</p>
+    <p class="error" v-else-if="error">{{error}}</p>
   </div>
 </body>
 </html>

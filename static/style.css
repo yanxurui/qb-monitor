@@ -1,35 +1,43 @@
 h1, p {
-    text-align: center;
+  text-align: center;
+}
+
+.error {
+  color: red;
+}
+
+.success {
+  color: green;
 }
 
 /* table style */
 table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
 }
 
 tbody>tr:nth-of-type(even) {
-    background: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 tbody>tr:hover {
-    background-color: #ccc;
+  background-color: #ccc;
 }
 
 th, td {
-    border: solid 1px;
+  border: solid 1px;
 }
 
 thead {
-    border-bottom: solid 2px;
+  border-bottom: solid 2px;
 }
 
 th, td {
-    padding: .5rem;
+  padding: .5rem;
 }
 
 th {
-    text-align: center;
+  text-align: center;
 }
 
 /* 3-dots loading style */
@@ -37,7 +45,7 @@ th {
   overflow: hidden;
   display: inline-block;
   vertical-align: bottom;
-  -webkit-animation: ellipsis steps(4,end) 900ms infinite;      
+  -webkit-animation: ellipsis steps(4,end) 900ms infinite;  
   animation: ellipsis steps(4,end) 900ms infinite;
   content: "\2026"; /* ascii code for the ellipsis character */
   width: 0px;
@@ -45,13 +53,13 @@ th {
 
 @keyframes ellipsis {
   to {
-    width: 1.25em;    
+  width: 1.25em;  
   }
 }
 
 @-webkit-keyframes ellipsis {
   to {
-    width: 1.25em;    
+  width: 1.25em;  
   }
 }
 

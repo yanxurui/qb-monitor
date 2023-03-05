@@ -23,7 +23,7 @@ async def index(request):
 @routes.get('/qbs')
 async def home(request):
     # reload config if necessary
-    config = Config.get_config(True)
+    config = Config.get_config(update=True)
     return web.json_response(config['qbs'])
 
 @routes.get(r'/qbs/{qb_id:\d+}')
