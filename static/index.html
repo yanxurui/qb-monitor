@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <script type="module">
       import { createApp } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js'
-
+      const columns = ['dl_info_speed', 'dl_info_data', 'up_info_speed', 'up_info_data'];
       createApp({
         data() {
           return {
@@ -15,9 +15,9 @@
             error: '',
             qbs: [],
             total: {},
-            columns: ['dl_info_speed', 'dl_info_data', 'up_info_speed', 'up_info_data'],
+            columns: columns,
             sortKey: '',
-            sortOrders: {},
+            sortOrders: columns.reduce((o, key) => ((o[key] = 1), o), {}),
           }
         },
         created() {
@@ -41,15 +41,10 @@
         },
         methods: {
           init() {
-            // give each item a unique id
-            let id = 0;
-
             // component is now ready.
-            this.error = '';
             this.columns.forEach(c => {
               this.total[c] = 0;
             });
-            this.sortOrders = this.columns.reduce((o, key) => ((o[key] = 1), o), {});
 
             fetch("/qbs")
               .then(function(response) {
@@ -58,6 +53,9 @@
                 }
                 return response.json();})
               .then(data => {
+                // give each item a unique id
+                let id = 0;
+
                 this.qbs = data;
                 this.qbs.forEach(qb => {
                   qb.id = id++;
@@ -74,6 +72,7 @@
                     }
                     return response.json();})
                   .then(data => {
+                    this.error = '';
                     this.now = new Date().toLocaleTimeString();
                     this.columns.forEach(c => {
                       let v = data[c];
