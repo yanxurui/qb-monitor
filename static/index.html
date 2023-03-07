@@ -32,7 +32,9 @@
             if (sortKey) {
               data = data.slice().sort((a, b) => {
                 a = a[sortKey];
+                a = a == undefined ? -1 : a;
                 b = b[sortKey];
+                b = b == undefined ? -1 : b;
                 return (a === b ? 0 : a > b ? 1 : -1) * order;
               })
             }
