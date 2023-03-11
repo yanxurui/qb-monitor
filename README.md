@@ -1,5 +1,6 @@
 # qb-monitor
-A simple web app to monitor multiple qbittorrent instances
+
+A simple web app to monitor multiple qbittorrent instances.
 
 ## Usage
 1. Copy `config.json.default` to `config.json` and add your qb info there. (Edit to this file can take effect without restarting the service)
@@ -16,3 +17,7 @@ location /qm/ {
     proxy_set_header X-Forwarded-Prefix /qm;
 }
 ```
+
+## Implementation
+* frontend: Vue.js
+* backend: aiohttp
