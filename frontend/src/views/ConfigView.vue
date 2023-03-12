@@ -2,7 +2,6 @@
     <form @submit.prevent="">
         <textarea :rows="countOfLines" v-model="config"></textarea>
         <button @click="updateConfig">submit</button>
-        <button @click='this.$router.push("/");'>cancel</button>
     </form>
 </template>
 
@@ -33,7 +32,7 @@ export default {
     },
     computed: {
         countOfLines() {
-            return this.config.split(/\r\n|\r|\n/).length;
+            return Math.max(6, this.config.split(/\r\n|\r|\n/).length);
         }
     },
     methods: {
@@ -45,11 +44,12 @@ export default {
             } else {
                 if (response.status == 401) {
                     this.$router.push("/login");
-                } else if (response.status == 404) {
+                }
+                if (response.status == 404) {
                     this.config = example;
-                    this.$notify({ type: "warn", text: "Your config is empty and an example was populated!" });
+                    this.$notify({ type: "warn", text: "Your config is empty! An example was populated." });
                 } else {
-                    this.$notify({ type: "error", text: body });
+                    this.$notify({ type: "error", title: response.statusText, text: body });
                 }
             }
         },

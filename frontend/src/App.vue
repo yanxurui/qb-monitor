@@ -1,14 +1,11 @@
 <script setup>
 import { RouterView } from 'vue-router'
+import TheNavBar from './components/TheNavBar.vue'
 </script>
 
 <template>
-    <header>
-        <h1>Qbittorrent monitor</h1>
-    </header>
+    <TheNavBar />
 
     <RouterView />
     <notifications position="bottom right" />
 </template>
-
-<style scoped></style>

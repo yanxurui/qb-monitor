@@ -1,9 +1,7 @@
 <template>
-    <ul>
-        <li>
-            <RouterLink to="/config">Config</RouterLink>
-        </li>
-        <li><a target="_blank" href="https://github.com/yanxurui/qb-monitor">Github</a></li>
+    <ul v-show="$route.name != 'login'">
+        <li><RouterLink to="/">Home</RouterLink></li>
+        <li><RouterLink to="/config">Config</RouterLink></li>
         <li style="float:right"><a @click.prevent="logout" href="#">Logout</a></li>
     </ul>
 </template>
@@ -23,7 +21,7 @@ export default {
                 }
                 else {
                     const errorMsg = await response.text();
-                    throw Error(errorMsg)
+                    this.$notify({ type: "error", title: response.statusText, text: errorMsg });
                 }
             }
             catch (error) {
