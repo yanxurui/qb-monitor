@@ -5,10 +5,16 @@ body{
   flex-direction: column;
 }
 
+header, footer, h1, h2, p {
+  text-align: center;
+}
+
 footer{
+  /* display the footer at the bottom of the page */
   margin-top: auto;
 }
 
-header, footer, h1, h2, p {
-  text-align: center;
+footer img {
+  /* display the icon as circle */
+  border-radius: 50%;
 }

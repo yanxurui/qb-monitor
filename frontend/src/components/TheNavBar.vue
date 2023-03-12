@@ -36,6 +36,7 @@ export default {
 ul {
     list-style-type: none;
     padding: 0;
+    margin: 0;
     overflow: hidden;
     background-color: #009688;
 }
