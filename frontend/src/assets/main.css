@@ -5,6 +5,14 @@ body{
   flex-direction: column;
 }
 
+/* Avoid Chrome to see Safari hack */
+@supports (-webkit-touch-callout: none) {
+  body {
+    /* The hack for Safari */
+    min-height: -webkit-fill-available;
+  }
+}
+
 header, footer, h1, h2, p {
   text-align: center;
 }
@@ -12,6 +20,7 @@ header, footer, h1, h2, p {
 footer{
   /* display the footer at the bottom of the page */
   margin-top: auto;
+  margin-bottom: 1em;
 }
 
 footer img {
