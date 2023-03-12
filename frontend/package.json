@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "@kyvg/vue3-notification": "^2.9.0",
+    "@vueuse/core": "^9.13.0",
+    "pinia": "^2.0.33",
     "vue": "^3.2.47",
     "vue-router": "^4.1.6"
   },

@@ -9,46 +9,51 @@
             Login
         </button>
         <p>You don't have an account? <a class="a-button" @click.prevent="login_or_register('register')">Register</a></p>
-
-        <p class="error" v-if="this.error">
-            {{ this.error }}
-        </p>
     </form>
 </template>
 
-<script>
-export default {
-    data() {
-        return {
-            username: "",
-            password: "",
-            error: "",
-        };
-    },
-    methods: {
-        async login_or_register(action) {
-            try {
-                const response = await fetch('/api/' + action, {
-                    method: "POST",
-                    body: JSON.stringify({ username: this.username, password: this.password })
-                });
-                if (response.ok) {
-                    this.$router.push({ name: "home" });
-                    if (action == 'register') {
-                        this.$notify({ type: "success", title: "New account created!" });
-                    } else {
-                        this.$notify({ type: "success", title: "Welcome " + this.username + " back!" });
-                    }
-                } else {
-                    const errMsg = await response.text();
-                    this.$notify({ type: "error", title: response.statusText, text: errMsg });
-                }
-            } catch (error) {
-                this.$notify({ type: "error", duration: 8000, text: error });
-            }
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useNotification } from "@kyvg/vue3-notification";
+import { useUserStore } from '../store'
+
+const router = useRouter()
+const { notify}  = useNotification()
+const userStore = useUserStore()
+
+const username = ref("");
+const password = ref("");
+
+const isEmpty = (str) => (!str?.length);
+
+async function login_or_register(action) {
+    try {
+        if (isEmpty(username.value) || isEmpty(password.value)) {
+            notify({type: "error", text: "Empty username or password"});
+            return
         }
-    },
-};
+
+        const response = await fetch('/api/' + action, {
+            method: "POST",
+            body: JSON.stringify({ username: username.value, password: password.value })
+        });
+        if (response.ok) {
+            router.push({ name: "home" });
+            if (action == 'register') {
+                notify({ type: "success", title: "New account created!" });
+            } else {
+                notify({ type: "success", title: "Welcome " + username.value + " back!" });
+            }
+            userStore.login(username.value);
+        } else {
+            const errMsg = await response.text();
+            notify({ type: "error", title: response.statusText, text: errMsg });
+        }
+    } catch (error) {
+        notify({ type: "error", duration: 8000, text: error });
+    }
+}
 </script>
 
 <style scoped>

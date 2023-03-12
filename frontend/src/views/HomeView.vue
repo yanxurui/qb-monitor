@@ -177,14 +177,6 @@ export default {
 </template>
 
 <style>
-.error {
-    color: red;
-}
-
-.success {
-    color: green;
-}
-
 button {
     border: 2px solid black;
     border-color: #04aa6d;

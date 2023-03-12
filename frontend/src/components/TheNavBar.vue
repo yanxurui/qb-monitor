@@ -1,33 +1,38 @@
 <template>
-    <ul v-show="$route.name != 'login'">
+    <ul v-show="userStore.isLoggedIn">
         <li><RouterLink to="/">Home</RouterLink></li>
         <li><RouterLink to="/config">Config</RouterLink></li>
         <li style="float:right"><a @click.prevent="logout" href="#">Logout</a></li>
     </ul>
 </template>
 
-<script>
-export default {
-    methods: {
-        async logout() {
-            try {
-                const response = await fetch('/api/logout', { method: "POST" });
-                if (response.ok) {
-                    this.$router.push({ name: "login" });
-                    this.$notify({
-                        title: "Authorization",
-                        text: "You have been logged out!",
-                    });
-                }
-                else {
-                    const errorMsg = await response.text();
-                    this.$notify({ type: "error", title: response.statusText, text: errorMsg });
-                }
-            }
-            catch (error) {
-                this.$notify({ type: "error", text: error });
-            }
+<script setup>
+import { useRouter } from 'vue-router'
+import { useNotification } from "@kyvg/vue3-notification";
+import { useUserStore } from '../store'
+
+const router = useRouter();
+const { notify }  = useNotification();
+const userStore = useUserStore();
+
+async function logout() {
+    try {
+        const response = await fetch('/api/logout', { method: "POST" });
+        if (response.ok) {
+            router.push({ name: "login" });
+            userStore.logout();
+            notify({
+                title: "Authorization",
+                text: "You have been logged out!",
+            });
         }
+        else {
+            const errorMsg = await response.text();
+            notify({ type: "error", title: response.statusText, text: errorMsg });
+        }
+    }
+    catch (error) {
+        notify({ type: "error", text: error });
     }
 }
 </script>
