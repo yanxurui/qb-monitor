@@ -41,7 +41,7 @@ export default {
                     }
                 } else {
                     const errMsg = await response.text();
-                    throw Error(response.statusText + ": " + errMsg)
+                    this.$notify({ type: "error", title: response.statusText, text: errMsg });
                 }
             } catch (error) {
                 this.$notify({ type: "error", duration: 8000, text: error });

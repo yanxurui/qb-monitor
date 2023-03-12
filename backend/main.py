@@ -1,5 +1,6 @@
 import os
 import errno
+import hashlib
 import json
 import time
 import logging
@@ -35,6 +36,7 @@ async def register(request):
     password = data.get('password')
     if username is None or password is None:
         raise web.HTTPBadRequest(text='username or password should not be null')
+    password = hashlib.sha256(password.encode('utf-8')).hexdigest()
     user = User(username, password)
     try:
         await user.create()
@@ -51,13 +53,13 @@ async def login(request):
     password = data.get('password')
     if username is None or password is None:
         raise web.HTTPBadRequest(text='username or password should not be null')
+    password = hashlib.sha256(password.encode('utf-8')).hexdigest()
     user = await User.get(username)
     if user and user.password == password:
         resp = web.Response(text='ok')
-        # generate a uuid
         # Todo: memory leak caused by inactive user
         # Todo: when do we change the uuid?
-        # Todo: what if the service restarts? User needs to login again
+        # Todo: what if the service restarts? user needs to login again
         user_map[user.uuid] = user
         await remember(request, resp, user.uuid)
         return resp
