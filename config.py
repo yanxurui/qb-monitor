@@ -1,28 +1,39 @@
-import json
 import os
 import logging
 
-get_time = lambda f: os.stat(f).st_ctime
+from aiohttp import web
+from aiohttp_security import check_authorized
 
-class Config:
-    _config = None
-    _config_file_name = 'config.json'
-    _config_file_prev_modified_time = None
+class ConfigView(web.View):
+    @staticmethod
+    def readConfig(path):
+        try:
+            with open(path) as f:
+                return f.read()
+        except:
+            logging.exception()
+            return None
 
-    @classmethod
-    def get_config(cls, update=False):
-        if not cls._config or update and cls.is_config_file_updated():
-            logging.info('reload config')
-            cls._config = None
-            with open(cls._config_file_name, 'r') as f:
-                # Reading from json file
-                cls._config = json.load(f)
-        return cls._config
+    def getPath(self, username):
+        return os.path.join('config', username + '.json')
 
-    @classmethod
-    def is_config_file_updated(cls):
-        t = get_time(cls._config_file_name)
-        if t != cls._config_file_prev_modified_time:
-            cls._config_file_prev_modified_time = t
-            return True
-        return False
+    async def get(self):
+        user = await check_authorized(self.request)
+        c = ConfigView.getConfig(self.getPath(user.username))
+        if c:
+            return web.Response(text=c)
+        else:
+            return web.HTTPNotFound(text='No config')
+
+    async def post(self):
+        user = await check_authorized(self.request)
+        data = await self.request.post()
+        path = self.getPath(user.username)
+        try:
+            with open(path, 'w') as f:
+                return f.write(data)
+        except Exception as e:
+            logging.exception()
+            return web.HTTPInternalServerError(text='Failed to save the config file')
+        return web.Response(text='Saved successfully!')
+

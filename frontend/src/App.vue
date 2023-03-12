@@ -1,16 +1,14 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { RouterView } from 'vue-router'
 </script>
 
 <template>
-  <header>
-    <HelloWorld />
-  </header>
+    <header>
+        <h1>Qbittorrent monitor</h1>
+    </header>
 
-  <RouterView />
+    <RouterView />
+    <notifications position="bottom right" />
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
