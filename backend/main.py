@@ -13,6 +13,9 @@ from aiohttp_security import CookiesIdentityPolicy
 from aiohttp_security import setup as setup_security
 from aiohttp_security import remember, forget, check_authorized
 
+from google.oauth2 import _id_token_async
+from google.auth.transport import _aiohttp_requests
+
 from user import User
 from auth import DictionaryAuthorizationPolicy
 
@@ -23,51 +26,26 @@ logging.basicConfig(
     level=logging.INFO)
 routes = web.RouteTableDef()
 
-@routes.get('/')
-async def index(request):
-    directory = request.app.router['static'].get_info()['directory']
-    location = os.path.join(directory, 'index.html')
-    return web.FileResponse(path=location)
-
-@routes.post('/register')
-async def register(request):
-    data = await request.json()
-    username = data.get('username')
-    password = data.get('password')
-    if username is None or password is None:
-        raise web.HTTPBadRequest(text='username or password should not be null')
-    password = hashlib.sha256(password.encode('utf-8')).hexdigest()
-    user = User(username, password)
+@routes.post('/signin')
+async def signin(request):
+    token = await request.text()
     try:
-        await user.create()
-    except sqlite3.IntegrityError as e:
+        id_info = await _id_token_async.verify_oauth2_token(
+            token,
+            _aiohttp_requests.Request(),
+            '582570402124-u6ntuo1s4ct7p83q2g33dd3ujtimpi4s.apps.googleusercontent.com')
+    except ValueError as e:
         app.logger.exception(e)
-        raise web.HTTPBadRequest(text='Username already exists')
-    # redirect internally
-    return await login(request)
-
-@routes.post('/login')
-async def login(request):
-    data = await request.json()
-    username = data.get('username')
-    password = data.get('password')
-    if username is None or password is None:
-        raise web.HTTPBadRequest(text='username or password should not be null')
-    password = hashlib.sha256(password.encode('utf-8')).hexdigest()
-    user = await User.get(username)
-    if user and user.password == password:
-        resp = web.Response(text='ok')
-        # Todo: memory leak caused by inactive user
-        # Todo: when do we change the uuid?
-        # Todo: what if the service restarts? user needs to login again
-        user_map[user.uuid] = user
-        await remember(request, resp, user.uuid)
-        return resp
-    else:
-        if user is None:
-            raise aiohttp.web.HTTPUnauthorized(text='User does not exist')
-        else:
-            raise aiohttp.web.HTTPUnauthorized(text='Wrong password')
+        raise web.HTTPBadRequest(text='Invalid token')
+    userid = id_info['sub']
+    user, status = await User.signin(userid)
+    resp = web.Response(text='ok', status=status)
+    # Todo: memory leak caused by inactive user
+    # Todo: when do we change the token?
+    # Todo: what if the service restarts? user needs to login again
+    user_map[user.token] = user
+    await remember(request, resp, user.token)
+    return resp
 
 @routes.post('/logout')
 async def logout(request):
@@ -81,7 +59,7 @@ async def home(request):
     user = await check_authorized(request)
     config = user.config
     if config is None:
-        c = ConfigView.readConfig(user.username)
+        c = ConfigView.readConfig(user.userid)
         if c is None:
             raise web.HTTPNotFound()
         config = json.loads(c)
@@ -155,12 +133,12 @@ async def query_qb(qb):
 class ConfigView(web.View):
     folder = 'conf'
     @classmethod
-    def getPath(cls, username):
-        return os.path.join(cls.folder, username + '.json')
+    def getPath(cls, userid):
+        return os.path.join(cls.folder, userid + '.json')
 
     @classmethod
-    def readConfig(cls, username):
-        path = cls.getPath(username)
+    def readConfig(cls, userid):
+        path = cls.getPath(userid)
         try:
             with open(path) as f:
                 return f.read()
@@ -170,7 +148,7 @@ class ConfigView(web.View):
 
     async def get(self):
         user = await check_authorized(self.request)
-        c = ConfigView.readConfig(user.username)
+        c = ConfigView.readConfig(user.userid)
         if c:
             return web.Response(text=c)
         else:
@@ -179,7 +157,7 @@ class ConfigView(web.View):
     async def post(self):
         user = await check_authorized(self.request)
         data = await self.request.text()
-        path = self.getPath(user.username)
+        path = self.getPath(user.userid)
         if not data.strip():
             # scenario 1: clean the config
             try:
@@ -189,12 +167,22 @@ class ConfigView(web.View):
                     raise # re-raise exception if a different error occurred
             return web.Response(text='Deleted successfully!')
 
-        # scenario 2: overwrite the existing config file
+        # validate the config
         try:
             config = json.loads(data)
+            if type(config) is not list:
+                raise ValueError('not a list')
+            for qb in config:
+                if type(qb) is not dict:
+                    raise ValueError('not a dict')
+                for required_key in ['name', 'url', 'username', 'password']:
+                    if required_key not in qb:
+                        raise ValueError('missing key: ' + required_key)
         except Exception as e:
             app.logger.exception(e)
-            raise web.HTTPBadRequest(text='Invalid json: ' + str(e))
+            raise web.HTTPBadRequest(text='Invalid config: ' + str(e))
+
+        # scenario 2: overwrite the existing config file
         try:
             with open(path, 'w') as f:
                 f.write(data)

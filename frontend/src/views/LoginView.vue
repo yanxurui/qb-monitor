@@ -1,51 +1,39 @@
 <template>
-    <form @submit.prevent="">
-        <label for="username"><b>Username</b></label>
-        <input class="form-control" v-model="username" type="text" name="username" placeholder="username@xample.com" required />
-        <label for="password"><b>Password</b></label>
-        <input class="form-control" v-model="password" type="password" name="password" placeholder="password123" required />
-
-        <button type="submit" @click="login_or_register('login')">
-            Login
-        </button>
-        <p>You don't have an account? <a class="a-button" @click.prevent="login_or_register('register')">Register</a></p>
-    </form>
+    <div class="container">
+        <GoogleLogin :callback="callback" />
+    </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useNotification } from "@kyvg/vue3-notification";
 import { useUserStore } from '../store'
+import { decodeCredential } from 'vue3-google-login'
 
 const router = useRouter()
 const { notify}  = useNotification()
 const userStore = useUserStore()
 
-const username = ref("");
-const password = ref("");
-
-const isEmpty = (str) => (!str?.length);
-
-async function login_or_register(action) {
+const callback = async (resp) => {
+    // This callback will be triggered when the user selects or login to
+    // his Google account from the popup
+    // decodeCredential will retrive the JWT payload from the credential
+    const userData = decodeCredential(resp.credential)
+    console.log(resp.credential)
+    console.log("Handle the userData", userData)
     try {
-        if (isEmpty(username.value) || isEmpty(password.value)) {
-            notify({type: "error", text: "Empty username or password"});
-            return
-        }
-
-        const response = await fetch('/api/' + action, {
+        const response = await fetch('/api/signin', {
             method: "POST",
-            body: JSON.stringify({ username: username.value, password: password.value })
+            body: resp.credential
         });
         if (response.ok) {
             router.push({ name: "home" });
-            if (action == 'register') {
+            if (response.status ==201) {
                 notify({ type: "success", title: "New account created!" });
             } else {
-                notify({ type: "success", title: "Welcome " + username.value + " back!" });
+                notify({ type: "success", title: "Welcome " + userData.given_name + " back!" });
             }
-            userStore.login(username.value);
+            userStore.login(userData.email);
         } else {
             const errMsg = await response.text();
             notify({ type: "error", title: response.statusText, text: errMsg });
@@ -54,45 +42,17 @@ async function login_or_register(action) {
         notify({ type: "error", duration: 8000, text: error });
     }
 }
+
+onBeforeRouteLeave ((to, from) => {
+    // Delete teh cookie added by google one-tap sign-in
+    // because Python's SimpleCookie failed to parse cookie value with double quotes
+    document.cookie = 'g_state=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+})
+
 </script>
 
 <style scoped>
 .container {
     text-align: center;
-}
-
-form {
-    border: 3px solid #f1f1f1;
-    padding: 16px;
-    margin: 0 auto;
-    max-width: 500px;
-}
-
-input {
-    width: 100%;
-    padding: 12px 20px;
-    margin: 8px 0;
-    display: inline-block;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-}
-
-button {
-    background-color: #04AA6D;
-    color: white;
-    padding: 14px 20px;
-    margin: 8px 0;
-    border: none;
-    cursor: pointer;
-    width: 100%;
-}
-
-.a-button {
-    color: green;
-    cursor: pointer;
-}
-
-button:hover {
-    opacity: 0.8;
 }
 </style>

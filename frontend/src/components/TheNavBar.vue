@@ -1,5 +1,5 @@
 <template>
-    <ul v-show="userStore.isLoggedIn">
+    <ul v-show="show">
         <li><RouterLink to="/">Home</RouterLink></li>
         <li><RouterLink to="/config">Config</RouterLink></li>
         <li style="float:right"><a @click.prevent="logout" href="#">Logout</a></li>
@@ -7,13 +7,16 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
+import {computed} from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useNotification } from "@kyvg/vue3-notification";
 import { useUserStore } from '../store'
 
 const router = useRouter();
 const { notify }  = useNotification();
 const userStore = useUserStore();
+
+const show = computed(() => (useRoute().name != "login" && userStore.isLoggedIn));
 
 async function logout() {
     try {
