@@ -1,0 +1,29 @@
+body{
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Avoid Chrome to see Safari hack */
+@supports (-webkit-touch-callout: none) {
+  body {
+    /* The hack for Safari */
+    min-height: -webkit-fill-available;
+  }
+}
+
+header, footer, h1, h2, p {
+  text-align: center;
+}
+
+footer{
+  /* display the footer at the bottom of the page */
+  margin-top: auto;
+  margin-bottom: 1em;
+}
+
+footer img {
+  /* display the icon as circle */
+  border-radius: 50%;
+}
