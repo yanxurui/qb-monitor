@@ -53,6 +53,7 @@ onBeforeRouteLeave ((to, from) => {
 
 <style scoped>
 .container {
+    margin-top: 5%;
     text-align: center;
 }
 </style>

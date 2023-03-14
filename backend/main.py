@@ -6,7 +6,6 @@ import time
 import logging
 from datetime import datetime
 
-import sqlite3
 import aiohttp
 from aiohttp import web
 from aiohttp_security import CookiesIdentityPolicy
@@ -15,11 +14,13 @@ from aiohttp_security import remember, forget, check_authorized
 
 from google.oauth2 import _id_token_async
 from google.auth.transport import _aiohttp_requests
+from aiohttp_client_cache import CachedSession, CacheBackend
 
 from user import User
 from auth import DictionaryAuthorizationPolicy
 
 user_map = {}
+request_cache = CacheBackend(expire_after=60*60)
 
 logging.basicConfig(
     format='%(asctime)s %(levelname)s %(filename)s:%(lineno)d %(message)s',
@@ -30,10 +31,12 @@ routes = web.RouteTableDef()
 async def signin(request):
     token = await request.text()
     try:
-        id_info = await _id_token_async.verify_oauth2_token(
-            token,
-            _aiohttp_requests.Request(),
-            '582570402124-u6ntuo1s4ct7p83q2g33dd3ujtimpi4s.apps.googleusercontent.com')
+        async with CachedSession(cache=request_cache, auto_decompress=False) as cached_session:
+            google_request = _aiohttp_requests.Request(session=cached_session)
+            id_info = await _id_token_async.verify_oauth2_token(
+                token,
+                google_request,
+                '582570402124-u6ntuo1s4ct7p83q2g33dd3ujtimpi4s.apps.googleusercontent.com')
     except ValueError as e:
         app.logger.exception(e)
         raise web.HTTPBadRequest(text='Invalid token')
@@ -158,10 +161,11 @@ class ConfigView(web.View):
         user = await check_authorized(self.request)
         data = await self.request.text()
         path = self.getPath(user.userid)
+        # scenario 1: clean the config
         if not data.strip():
-            # scenario 1: clean the config
             try:
                 os.remove(path)
+                user.config = None
             except OSError as e:
                 if e.errno != errno.ENOENT: # errno.ENOENT = no such file or directory
                     raise # re-raise exception if a different error occurred
