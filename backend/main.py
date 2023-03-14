@@ -1,6 +1,5 @@
 import os
 import errno
-import hashlib
 import json
 import time
 import logging
@@ -19,7 +18,6 @@ from aiohttp_client_cache import CachedSession, CacheBackend
 from user import User
 from auth import DictionaryAuthorizationPolicy
 
-user_map = {}
 request_cache = CacheBackend(expire_after=60*60)
 
 logging.basicConfig(
@@ -43,10 +41,9 @@ async def signin(request):
     userid = id_info['sub']
     user, status = await User.signin(userid)
     resp = web.Response(text='ok', status=status)
-    # Todo: memory leak caused by inactive user
-    # Todo: when do we change the token?
-    # Todo: what if the service restarts? user needs to login again
-    user_map[user.token] = user
+    # memory leak caused by inactive user? use a TTL cache
+    # when do we change the token? when the user logout all devices
+    # user needs to login again when the service restarts? persist the token
     await remember(request, resp, user.token)
     return resp
 
@@ -61,12 +58,8 @@ async def logout(request):
 async def home(request):
     user = await check_authorized(request)
     config = user.config
-    if config is None:
-        c = ConfigView.readConfig(user.userid)
-        if c is None:
-            raise web.HTTPNotFound()
-        config = json.loads(c)
-        user.config = config
+    if not config:
+        raise web.HTTPNotFound(text='No config')
     return web.json_response(config)
 
 @routes.get(r'/qbs/{qb_id:\d+}')
@@ -134,24 +127,9 @@ async def query_qb(qb):
 
 @routes.view('/config')
 class ConfigView(web.View):
-    folder = 'conf'
-    @classmethod
-    def getPath(cls, userid):
-        return os.path.join(cls.folder, userid + '.json')
-
-    @classmethod
-    def readConfig(cls, userid):
-        path = cls.getPath(userid)
-        try:
-            with open(path) as f:
-                return f.read()
-        except Exception as e:
-            logging.exception(e)
-            return None
-
     async def get(self):
         user = await check_authorized(self.request)
-        c = ConfigView.readConfig(user.userid)
+        c = user.readConfig()
         if c:
             return web.Response(text=c)
         else:
@@ -160,7 +138,7 @@ class ConfigView(web.View):
     async def post(self):
         user = await check_authorized(self.request)
         data = await self.request.text()
-        path = self.getPath(user.userid)
+        path = user.getPath()
         # scenario 1: clean the config
         if not data.strip():
             try:
@@ -199,7 +177,7 @@ class ConfigView(web.View):
 
 app = web.Application()
 app.add_routes(routes)
-setup_security(app, CookiesIdentityPolicy(), DictionaryAuthorizationPolicy(user_map))
+setup_security(app, CookiesIdentityPolicy(), DictionaryAuthorizationPolicy())
 
 if __name__ == '__main__':
     web.run_app(app, port=5001)
