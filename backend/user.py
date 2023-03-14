@@ -11,7 +11,12 @@ from cachetools import TTLCache
 
 class User:
     '''User class'''
+    # create conf_folder if it does not exist
     conf_folder = 'conf'
+    if not os.path.exists(conf_folder):
+        os.makedirs(conf_folder)
+
+    # create the table if it does not exist
     db_path = 'sqlite.db'
     conn = sqlite3.connect(db_path)
     conn.execute('''CREATE TABLE IF NOT EXISTS users 
