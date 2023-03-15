@@ -20,7 +20,7 @@ python main.py
 cd frontend
 npm i
 npm run build
-cp -r dist /var/www/qm # soft link does not work
+sudo cp -Tr dist /var/www/qm # soft link does not work
 
 cd ..
 cd backend

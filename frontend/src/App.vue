@@ -7,5 +7,5 @@ import TheNavBar from './components/TheNavBar.vue'
     <TheNavBar />
 
     <RouterView />
-    <notifications position="bottom right" />
+    <notifications position="bottom right" width="100%"/>
 </template>

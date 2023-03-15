@@ -28,6 +28,9 @@ footer img {
   border-radius: 50%;
 }
 
+.vue-notification-group {
+  max-width: 500px;
+}
 .vue-notification {
-  font-size: 20px;
+  font-size: 16px !important;
 }
