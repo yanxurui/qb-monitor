@@ -2,6 +2,15 @@
 
 A simple web app to monitor multiple qbittorrent instances.
 
+## Implementation
+* frontend: Vue3.js
+    * pinia: for store user data shared across components
+    * router
+    * vue3-notification
+    * vue-final-modal
+
+* backend: aiohttp + sqlite3
+
 ## Development
 ```sh
 cd frontend
@@ -15,7 +24,7 @@ pip install -r requirements.txt
 python main.py
 ```
 
-### Deploy using NGINX
+## Deployment (using NGINX)
 ```sh
 cd frontend
 npm i
@@ -23,6 +32,7 @@ npm run build
 sudo cp -Tr dist /var/www/qm # soft link does not work
 
 cd ..
+
 cd backend
 ln -s /home/yxr/qb-monitor/backend/supervisord.conf qb-monitor.ini
 supervisorctl reread
@@ -51,7 +61,3 @@ server {
     }
 }
 ```
-
-## Implementation
-* frontend: Vue3.js
-* backend: aiohttp + sqlite3
