@@ -46,11 +46,14 @@ class User:
                 (self.userid, self.token, self.created_at))
             await conn.commit()
 
-    async def update(self):
+    async def renew_token(self):
+        '''renew token'''
+        del User.user_cache[self.token]
+        self.token = str(uuid4())
         async with aiosqlite.connect(User.db_path) as conn:
             await conn.execute(
                 'UPDATE users SET token=? WHERE userid=?',
-                (str(uuid4()), self.userid))
+                (self.token, self.userid))
             await conn.commit()
 
     def getPath(self):

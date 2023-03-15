@@ -49,7 +49,10 @@ async def signin(request):
 
 @routes.post('/logout')
 async def logout(request):
-    await check_authorized(request)
+    user = await check_authorized(request)
+    data = await request.json()
+    if data.get('all'):
+        await user.renew_token()
     resp = web.Response(text='ok')
     await forget(request, resp)
     return resp

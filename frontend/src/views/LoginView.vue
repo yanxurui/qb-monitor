@@ -19,8 +19,6 @@ const callback = async (resp) => {
     // his Google account from the popup
     // decodeCredential will retrive the JWT payload from the credential
     const userData = decodeCredential(resp.credential)
-    console.log(resp.credential)
-    console.log("Handle the userData", userData)
     try {
         const response = await fetch('/api/signin', {
             method: "POST",
