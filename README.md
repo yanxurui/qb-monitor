@@ -2,12 +2,18 @@
 
 A simple web app to monitor multiple qbittorrent instances.
 
+<p align="center">
+<img src="assets/IMG_6161.jpeg" alt="home" width="400">
+<img src="assets/IMG_6155.jpeg" alt="config" width="400">
+</p>
+
 ## Implementation
 * frontend: Vue3.js
-    * pinia: for store user data shared across components
+    * pinia: to store user data shared across components
     * router
     * vue3-notification
     * vue-final-modal
+    * vue3-google-login: login requires access to google account
 
 * backend: aiohttp + sqlite3
 
