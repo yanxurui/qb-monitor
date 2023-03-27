@@ -36,8 +36,7 @@ export default {
         total() {
             let data = {}
             this.columns.forEach((c) => {
-                data[c] = 0;
-                data[c] = this.qbs.reduce((a, b) => (a[c] || 0) + (b[c] || 0), 0);
+                data[c] = this.qbs.reduce((partialSum, a) => partialSum + (a[c] || 0), 0);
             });
             return data;
         }
