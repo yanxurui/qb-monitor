@@ -10,7 +10,6 @@ export default {
         return {
             now: "",
             qbs: [],
-            total: {},
             columns: columns,
             sortKey: "",
             sortOrders: columns.reduce((o, key) => ((o[key] = 1), o), {}),
@@ -27,21 +26,25 @@ export default {
 
             if (sortKey) {
                 data = data.slice().sort((a, b) => {
-                    a = a[sortKey];
-                    b = b[sortKey];
+                    a = a[sortKey] || 0;
+                    b = b[sortKey] || 0;
                     return (a === b ? 0 : a > b ? 1 : -1) * order;
                 });
             }
             return data;
         },
+        total() {
+            let data = {}
+            this.columns.forEach((c) => {
+                data[c] = 0;
+                data[c] = this.qbs.reduce((a, b) => (a[c] || 0) + (b[c] || 0), 0);
+            });
+            return data;
+        }
     },
     methods: {
         init() {
             // component is now ready.
-            this.columns.forEach((c) => {
-                this.total[c] = 0;
-            });
-
             fetch("/api/qbs")
                 .then((response) => {
                     if (!response.ok) {
@@ -76,7 +79,6 @@ export default {
                                     let v = data[c];
                                     if (v != undefined) {
                                         qb[c] = v;
-                                        this.total[c] += v; // sum up all the values
                                     }
                                 });
                                 qb.ok = true;
